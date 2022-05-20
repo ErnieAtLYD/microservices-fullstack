@@ -1,0 +1,37 @@
+version: '3.7'
+
+services:
+  nginx:
+    depends_on:
+      - app-ui
+      - users-service
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - '4000:80'
+
+  app-ui:
+    stdin_open: true
+    build:
+      context: ./app-ui
+      dockerfile: Dockerfile
+    ports:
+      - '4100:3000'
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./app-ui:/app
+      - /app/node_modules
+
+  users-service:
+    build:
+      context: ./users-service
+      dockerfile: Dockerfile
+      target: builder
+    volumes:
+      - ./users-service/src:/app/src
+      - ./users-service/nodemon.json:/app/nodemon.json
+    ports:
+      - '4200:4200'
+    command: yarn dev
